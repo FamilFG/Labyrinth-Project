@@ -21,14 +21,8 @@ public abstract class LivingBeing extends Entity implements Executable {
         this.room = room;
         this.inventory = new ArrayList<>();
 
-        // Auto-register so World.step() calls execute() on this being
-        if (world != null) {
-            world.registerExecutable(this);
-        }
-
-        if (room != null) {
-            room.addLivingBeing(this);
-        }
+        if (world != null) world.registerExecutable(this);
+        if (room != null) room.addLivingBeing(this);
     }
 
     public int getHealthPoints() { return healthPoints; }
@@ -41,22 +35,33 @@ public abstract class LivingBeing extends Entity implements Executable {
         if (room != null) room.addLivingBeing(this);
     }
 
-    public void addToInventory(GameObject object) {
-        inventory.add(object);
+    public void addToInventory(GameObject object) { inventory.add(object); }
+
+    public void removeFromInventory(GameObject object) { inventory.remove(object); }
+
+    /**
+     * Give an object from this being's inventory to another LivingBeing.
+     * Returns true if transfer succeeded.
+     */
+    public boolean giveObjectTo(GameObject object, LivingBeing target) {
+        if (!inventory.contains(object)) return false;
+        inventory.remove(object);
+        target.addToInventory(object);
+        return true;
     }
 
-    public List<GameObject> getInventory() {
-        return inventory;
-    }
+    public List<GameObject> getInventory() { return inventory; }
 
     public void takeDamage(int amount) {
         healthPoints -= amount;
         if (healthPoints < 0) healthPoints = 0;
     }
 
-    public boolean isAlive() {
-        return healthPoints > 0;
+    public void heal(int amount) {
+        healthPoints += amount;
     }
+
+    public boolean isAlive() { return healthPoints > 0; }
 
     public abstract void execute();
 }

@@ -6,14 +6,13 @@ import java.util.Random;
 
 import game.living.Enemy;
 import game.living.Player;
+import game.map.Lock;
 import game.map.Room;
-import game.objects.GameObject;
-import game.objects.Key;
+import game.objects.*;
 import game.world.World;
 
 public class GameEngine {
 
-    // ANSI colors
     public static final String RESET  = "\u001B[0m";
     public static final String RED    = "\u001B[31m";
     public static final String GREEN  = "\u001B[32m";
@@ -30,10 +29,8 @@ public class GameEngine {
     private Player player;
     private List<Enemy> enemies;
 
-    // Key for the locked door on this map (one key per map)
     private String lockedDoorKeyId;
 
-    // Level transition
     private boolean levelComplete = false;
     private int currentLevel;
     private static final String[] MAP_FILES = {
@@ -65,7 +62,6 @@ public class GameEngine {
         enemies = new ArrayList<>();
         world = new World("Dungeon");
         findPlayer();
-        // Transfer player to new room but keep all stats/inventory
         Room newRoom = new Room("Room_L" + level, world);
         existingPlayer.moveTo(newRoom);
         this.player = existingPlayer;
@@ -73,10 +69,9 @@ public class GameEngine {
         initEntities();
     }
 
-    // Load next level. Returns new GameEngine or null if no more levels.
     public GameEngine nextLevel() {
         int next = currentLevel + 1;
-        if (next >= MAP_FILES.length) return null; // game finished
+        if (next >= MAP_FILES.length) return null;
         char[][] nextMap = MapLoader.loadMap(MAP_FILES[next]);
         if (nextMap == null) return null;
         return new GameEngine(nextMap, next, player);
@@ -93,20 +88,13 @@ public class GameEngine {
                 if (map[i][j] == 'P') { playerRow = i; playerCol = j; return; }
     }
 
-    // Find the locked door ('=') position to know which keyId matches it
-    private String buildDoorKeyId(int r, int c) {
-        return "KEY_" + r + "_" + c;
-    }
+    private String buildDoorKeyId(int r, int c) { return "KEY_" + r + "_" + c; }
 
     private void initEntities() {
-        // Find the locked door first so we know the keyId
         for (int i = 0; i < map.length; i++)
             for (int j = 0; j < map[i].length; j++)
-                if (map[i][j] == '=') {
-                    lockedDoorKeyId = buildDoorKeyId(i, j);
-                }
+                if (map[i][j] == '=') lockedDoorKeyId = buildDoorKeyId(i, j);
 
-        // Create Enemy objects for each 'E' on map
         Room sharedRoom = new Room("EnemyRoom", world);
         for (int i = 0; i < map.length; i++)
             for (int j = 0; j < map[i].length; j++)
@@ -118,10 +106,7 @@ public class GameEngine {
 
     // ---------------------------------------------------------------- STEP
 
-    // Called each turn — delegates to World which calls execute() on all enemies
-    public void step() {
-        world.step();
-    }
+    public void step() { world.step(); }
 
     // ---------------------------------------------------------------- MOVEMENT
 
@@ -136,12 +121,12 @@ public class GameEngine {
         if (target == '#') return;
 
         if (target == 'c') {
-            System.out.println("Chest nearby. Use 'chest' command to open it.");
+            System.out.println("Chest nearby. Use 'chest' to open it.");
             return;
         }
 
         if (target == '=') {
-            System.out.println("Locked door. Use 'open' command next to it.");
+            System.out.println("Locked door. Use 'open' to unlock it.");
             return;
         }
 
@@ -155,21 +140,19 @@ public class GameEngine {
             return;
         }
 
-        if (target == '-') {
-            // Door already opened — walk through freely
-        }
-
         if (target == 'E') {
-            attackEnemy(nr, nc);
-            // After killing enemy, player steps onto that cell
-            map[playerRow][playerCol] = '.';
-            playerRow = nr;
-            playerCol = nc;
-            map[playerRow][playerCol] = 'P';
+            boolean killed = attackEnemy(nr, nc);
+            // Move onto the cell only if enemy was killed
+            if (killed) {
+                map[playerRow][playerCol] = '.';
+                playerRow = nr;
+                playerCol = nc;
+                map[playerRow][playerCol] = 'P';
+            }
             return;
         }
 
-        // Move player
+        // Normal move (includes '-' open door)
         map[playerRow][playerCol] = '.';
         playerRow = nr;
         playerCol = nc;
@@ -180,68 +163,98 @@ public class GameEngine {
 
     public void openDoor() {
         int[] pos = findNearby('=');
-        if (pos == null) {
-            System.out.println("No locked door nearby.");
-            return;
-        }
+        if (pos == null) { System.out.println("No locked door nearby."); return; }
 
         int r = pos[0], c = pos[1];
         String needed = buildDoorKeyId(r, c);
 
         if (hasKeyId(needed)) {
-            map[r][c] = '-'; // opened door symbol
-            System.out.println("Door unlocked! You can walk through.");
-        } else {
-            System.out.println("You need a key to open this door. (need: " + needed + ")");
+            map[r][c] = '-';
+            System.out.println("Door unlocked with key!");
+            return;
         }
+
+        Crowbar crowbar = findCrowbarInInventory();
+        if (crowbar != null) {
+            map[r][c] = '-';
+            System.out.println("Door forced open with crowbar!");
+            return;
+        }
+
+        System.out.println("You need a key or crowbar to open this door.");
     }
 
     // ---------------------------------------------------------------- CHEST
 
     public void openChest() {
         int[] pos = findNearby('c');
-        if (pos == null) {
-            System.out.println("No chest nearby.");
-            return;
-        }
+        if (pos == null) { System.out.println("No chest nearby."); return; }
 
         int r = pos[0], c = pos[1];
-        map[r][c] = '.'; // chest disappears after opening
+        map[r][c] = '.';
 
-        // Randomly give: key for the locked door, or armor upgrade
-        int loot = rand.nextInt(2);
+        int loot = rand.nextInt(3);
         if (loot == 0 && lockedDoorKeyId != null) {
             Key key = new Key("Key", lockedDoorKeyId, world);
             player.addToInventory(key);
-            System.out.println("Chest opened! Found Key for the locked door.");
-        } else {
+            System.out.println("Chest opened! Found a Key for the locked door.");
+        } else if (loot == 1) {
             player.setArmorPoints(player.getArmorPoints() + 2);
             System.out.println("Chest opened! Armor +2. Now: " + player.getArmorPoints());
+        } else {
+            if (findCrowbarInInventory() == null) {
+                Crowbar crowbar = new Crowbar("Crowbar", world);
+                player.addToInventory(crowbar);
+                System.out.println("Chest opened! Found a Crowbar (can force-open doors).");
+            } else {
+                player.heal(10);
+                System.out.println("Chest opened! Healed 10 HP. Now: " + player.getHealthPoints());
+            }
         }
     }
 
     // ---------------------------------------------------------------- COMBAT
 
-    public void attackEnemy(int r, int c) {
-        // Find enemy whose current position on the map matches r,c
-        // (enemy moves each tick so stored row/col is always up to date in the object)
+    // Returns true if enemy was killed
+    public boolean attackEnemy(int r, int c) {
         Enemy target = null;
         for (Enemy e : enemies) {
-            if (e.getRow() == r && e.getCol() == c) {
-                target = e;
-                break;
-            }
+            if (e.getRow() == r && e.getCol() == c) { target = e; break; }
         }
 
         if (target != null) {
-            target.removeFromMap(); // set map[r][c] = '.'
-            enemies.remove(target);
-            System.out.println("Enemy defeated!");
+            int damage = player.attack(target);
+            if (damage > 0)
+                System.out.println("You hit enemy for " + damage + " damage!"
+                        + " | Enemy HP: " + target.getHealthPoints());
+            if (!target.isAlive()) {
+                target.removeFromMap();
+                enemies.remove(target);
+                System.out.println("Enemy defeated!");
+                return true;
+            }
+            return false; // enemy still alive — player stays put
         } else {
-            // Safety fallback — clear the cell anyway
+            // Safety fallback
             map[r][c] = '.';
             System.out.println("Enemy defeated!");
+            return true;
         }
+    }
+
+    // ---------------------------------------------------------------- LOCK COMMAND
+
+    public void attachLockToDoor() {
+        int[] pos = findNearby('-');
+        if (pos == null) { System.out.println("No open door nearby to lock."); return; }
+
+        Key key = findKeyInInventory();
+        if (key == null) { System.out.println("You need a key in inventory to create a lock."); return; }
+
+        Lock lock = new Lock();
+        lock.addAcceptedKey(key);
+        map[pos[0]][pos[1]] = '=';
+        System.out.println("Door locked with " + key.getName() + ".");
     }
 
     // ---------------------------------------------------------------- HELPERS
@@ -258,12 +271,21 @@ public class GameEngine {
     }
 
     private boolean hasKeyId(String keyId) {
-        for (GameObject obj : player.getInventory()) {
-            if (obj instanceof Key) {
-                if (((Key) obj).getKeyId().equals(keyId)) return true;
-            }
-        }
+        for (GameObject obj : player.getInventory())
+            if (obj instanceof Key && ((Key) obj).getKeyId().equals(keyId)) return true;
         return false;
+    }
+
+    private Key findKeyInInventory() {
+        for (GameObject obj : player.getInventory())
+            if (obj instanceof Key) return (Key) obj;
+        return null;
+    }
+
+    private Crowbar findCrowbarInInventory() {
+        for (GameObject obj : player.getInventory())
+            if (obj instanceof Crowbar) return (Crowbar) obj;
+        return null;
     }
 
     // ---------------------------------------------------------------- DISPLAY
@@ -280,7 +302,7 @@ public class GameEngine {
                     case 'E': System.out.print(PURPLE + "E " + RESET); break;
                     case 'c': System.out.print(YELLOW + "c " + RESET); break;
                     case '=': System.out.print(BLUE   + "= " + RESET); break;
-                    case '-': System.out.print(CYAN   + "- " + RESET); break; // opened door
+                    case '-': System.out.print(CYAN   + "- " + RESET); break;
                     default:  System.out.print(ch + " ");
                 }
             }
@@ -290,9 +312,9 @@ public class GameEngine {
 
     public void printStats() {
         System.out.println("HP: " + player.getHealthPoints()
-                + " | Strength: " + player.getStrengthPoints()
+                + " | STR: " + player.getStrengthPoints()
                 + " | Armor: " + player.getArmorPoints()
-                + " | Enemies left: " + enemies.size());
+                + " | Enemies: " + enemies.size());
     }
 
     public void printInventory() {
@@ -300,11 +322,12 @@ public class GameEngine {
         if (inv.isEmpty()) { System.out.println("Inventory empty."); return; }
         System.out.println("Inventory:");
         for (GameObject obj : inv) {
-            if (obj instanceof Key) {
+            if (obj instanceof Key)
                 System.out.println("  - Key (id=" + ((Key) obj).getKeyId() + ")");
-            } else {
+            else if (obj instanceof Crowbar)
+                System.out.println("  - Crowbar");
+            else
                 System.out.println("  - " + obj.getName());
-            }
         }
     }
 }
