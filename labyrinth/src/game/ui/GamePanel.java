@@ -78,8 +78,9 @@ public class GamePanel extends JPanel {
 
     private void movePlayer(int dr, int dc) {
         if (won || engine.isGameOver()) return;
-        engine.movePlayer(dr, dc);
-        finishTurn();
+        boolean moved = engine.movePlayer(dr, dc);
+        if (moved) finishTurn();
+        else repaint(); // still refresh to show any message (e.g. "wall!")
     }
 
     private void openNearby() {

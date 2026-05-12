@@ -24,14 +24,14 @@ public class Main {
             String cmd = sc.nextLine().trim().toLowerCase();
             if (cmd.equals("q")) break;
 
+            boolean moved = false;
             switch (cmd) {
-                case "w": engine.movePlayer(-1, 0); break;
-                case "s": engine.movePlayer(1, 0); break;
-                case "a": engine.movePlayer(0, -1); break;
-                case "d": engine.movePlayer(0, 1); break;
-                case "open": engine.openNearby(); break;
-                case "inv": engine.printInventory(); break;
-                default: System.out.println("Unknown command."); break;
+                case "w":    moved = engine.movePlayer(-1,  0); break;
+                case "s":    moved = engine.movePlayer( 1,  0); break;
+                case "a":    moved = engine.movePlayer( 0, -1); break;
+                case "d":    moved = engine.movePlayer( 0,  1); break;
+                case "open": engine.openNearby();               break;
+                case "inv":  engine.printInventory();           break;
             }
 
             if (engine.isLevelComplete()) {
@@ -45,10 +45,12 @@ public class Main {
                 continue;
             }
 
-            engine.step();
-            if (engine.isGameOver()) {
-                System.out.println("You died. Game over.");
-                break;
+            if (moved) {
+                engine.step();
+                if (engine.isGameOver()) {
+                    System.out.println("You died. Game over.");
+                    break;
+                }
             }
             System.out.println();
         }

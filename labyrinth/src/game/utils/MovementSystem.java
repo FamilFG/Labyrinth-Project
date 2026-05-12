@@ -7,42 +7,44 @@ class MovementSystem {
         this.engine = engine;
     }
 
-    void movePlayer(int dr, int dc) {
-        if (engine.isGameOver()) return;
+    boolean movePlayer(int dr, int dc) {
+        if (engine.isGameOver()) return false;
         engine.lastMessage = "";
 
         int nr = engine.playerRow + dr;
         int nc = engine.playerCol + dc;
 
-        if (nr < 0 || nr >= engine.map.length || nc < 0 || nc >= engine.map[nr].length) return;
+        // Out of bounds or wall — illegal move, time does not advance
+        if (nr < 0 || nr >= engine.map.length || nc < 0 || nc >= engine.map[nr].length) return false;
 
         char target = engine.map[nr][nc];
-        if (target == '#') return;
+        if (target == '#') return false;
 
         if (target == 'C') {
             engine.say("Chest nearby. Use 'open' or press E to open it.");
-            return;
+            return false;
         }
 
         if (target == 'D') {
             engine.say("Closed door. Use 'open' or press E to unlock it.");
-            return;
+            return false;
         }
 
         if (target == 'X') {
             placePlayer(nr, nc);
             engine.levelComplete = true;
             engine.say("Exit reached! Loading next level...");
-            return;
+            return true;
         }
 
         if (target == 'E') {
             boolean killed = engine.attackEnemy(nr, nc);
             if (killed) placePlayer(nr, nc);
-            return;
+            return true;
         }
 
         placePlayer(nr, nc);
+        return true;
     }
 
     private void placePlayer(int row, int col) {

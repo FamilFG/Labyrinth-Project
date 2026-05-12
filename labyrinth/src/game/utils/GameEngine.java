@@ -71,7 +71,7 @@ public class GameEngine {
 
     public GameEngine nextLevel() { return levelManager.nextLevel(); }
     public void step() { if (!isGameOver()) world.step(); }
-    public void movePlayer(int dr, int dc) { movementSystem.movePlayer(dr, dc); }
+    public boolean movePlayer(int dr, int dc) { return movementSystem.movePlayer(dr, dc); }
     public void openNearby() { interactionSystem.openNearby(); }
     public boolean attackEnemy(int r, int c) { return combatSystem.attackEnemy(r, c); }
     public void printMap() { renderer.printMap(); }
