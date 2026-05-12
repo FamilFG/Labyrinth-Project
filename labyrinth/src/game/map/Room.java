@@ -24,10 +24,8 @@ public class Room extends Entity {
     public List<GameObject> getObjects() { return objects; }
 
     public void addDoor(Door door) { doors.add(door); }
-
     public void addLivingBeing(LivingBeing lb) { livingBeings.add(lb); }
     public void removeLivingBeing(LivingBeing lb) { livingBeings.remove(lb); }
-
     public void addObject(GameObject obj) { objects.add(obj); }
     public void removeObject(GameObject obj) { objects.remove(obj); }
 }

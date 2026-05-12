@@ -32,19 +32,17 @@ public class Door extends Entity implements Activatable {
     @Override
     public boolean activate(GameObject object) {
         if (opened) return true;
-        if (lock == null) { opened = true; return true; }
-
-        if (object instanceof Key) {
-            if (lock.canUnlockWith((Key) object)) {
-                opened = true;
-                return true;
-            }
+        if (lock == null) {
+            opened = true;
+            return true;
         }
-        if (object instanceof Crowbar) {
-            if (lock.canUnlockWith((Crowbar) object)) {
-                opened = true;
-                return true;
-            }
+        if (object instanceof Key && lock.canUnlockWith((Key) object)) {
+            opened = true;
+            return true;
+        }
+        if (object instanceof Crowbar && lock.canUnlockWith((Crowbar) object)) {
+            opened = true;
+            return true;
         }
         return false;
     }

@@ -17,22 +17,21 @@ public class Main {
             engine.printMap();
             engine.printStats();
 
-            System.out.println("[P]=You [#]=Wall [c]=Chest [=]=Locked [−]=Open door [E]=Enemy [X]=Exit");
-            System.out.println("w/a/s/d=move | open=unlock door | chest=open chest | lock=lock door | inv=inventory | q=quit");
+            System.out.println("[P]=You [#]=Wall [C]=Chest [D]=Door [O]=Open door [E]=Enemy [X]=Exit");
+            System.out.println("w/a/s/d=move | open=open nearby door/chest | inv=inventory | q=quit");
             System.out.print(">> ");
 
             String cmd = sc.nextLine().trim().toLowerCase();
             if (cmd.equals("q")) break;
 
             switch (cmd) {
-                case "w":     engine.movePlayer(-1,  0); break;
-                case "s":     engine.movePlayer( 1,  0); break;
-                case "a":     engine.movePlayer( 0, -1); break;
-                case "d":     engine.movePlayer( 0,  1); break;
-                case "open":  engine.openDoor();         break;
-                case "chest": engine.openChest();        break;
-                case "lock":  engine.attachLockToDoor(); break;
-                case "inv":   engine.printInventory();   break;
+                case "w": engine.movePlayer(-1, 0); break;
+                case "s": engine.movePlayer(1, 0); break;
+                case "a": engine.movePlayer(0, -1); break;
+                case "d": engine.movePlayer(0, 1); break;
+                case "open": engine.openNearby(); break;
+                case "inv": engine.printInventory(); break;
+                default: System.out.println("Unknown command."); break;
             }
 
             if (engine.isLevelComplete()) {
@@ -47,6 +46,10 @@ public class Main {
             }
 
             engine.step();
+            if (engine.isGameOver()) {
+                System.out.println("You died. Game over.");
+                break;
+            }
             System.out.println();
         }
 
