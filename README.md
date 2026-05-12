@@ -1,5 +1,10 @@
 # Labyrinth
 
+<p align="center">
+  <img src="banner.png" alt="Deep Learning Projects Banner" />
+</p>
+
+
 Labyrinth is a Java maze adventure game. The player explores a labyrinth,
 opens chests and doors, fights enemies, collects items, and reaches the exit to
 move to the next level.
@@ -66,6 +71,7 @@ Labyrinth-Project/
 
 Important files:
 
+- `LICENSE` contains the project license text.
 - `labyrinth/src/game/main/GuiMain.java` starts the graphical version.
 - `labyrinth/src/game/main/Main.java` starts the console version.
 - `labyrinth/maps/` contains the level map files.
@@ -197,3 +203,7 @@ java -cp out game.main.GuiMain
 - Add more item types
 - Add a score or timer system
 - Improve enemy behavior
+
+## License
+
+This project uses the MIT License. See `LICENSE` for the full license text.
