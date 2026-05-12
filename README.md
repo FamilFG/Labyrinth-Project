@@ -48,30 +48,64 @@ No external libraries are required. The project uses only standard Java classes.
 
 ```text
 Labyrinth-Project/
+|-- .gitignore
 |-- README.md
 |-- Labyrinth.geany
+|-- LICENSE
+|-- banner.png
+|-- demo-usage.mp4
+|-- Dungeon Crawler.pptx
 |-- labyrinth/
-    |-- maps/
-    |   |-- map1.txt
-    |   |-- map2.txt
-    |   `-- map3.txt
-    `-- src/
-        `-- game/
-            |-- main/
-            |   |-- GuiMain.java
-            |   `-- Main.java
-            |-- ui/
-            |-- utils/
-            |-- world/
-            |-- map/
-            |-- living/
-            |-- objects/
-            `-- interfaces/
+|   |-- .gitignore
+|   |-- labyrinth.iml
+|   |-- maps/
+|   |   |-- map1.txt
+|   |   |-- map2.txt
+|   |   `-- map3.txt
+|   `-- src/
+|       `-- game/
+|           |-- interfaces/
+|           |   |-- Activatable.java
+|           |   `-- Executable.java
+|           |-- living/
+|           |   |-- Enemy.java
+|           |   |-- LivingBeing.java
+|           |   `-- Player.java
+|           |-- main/
+|           |   |-- GuiMain.java
+|           |   `-- Main.java
+|           |-- map/
+|           |   |-- Door.java
+|           |   |-- Lock.java
+|           |   `-- Room.java
+|           |-- objects/
+|           |   |-- Chest.java
+|           |   |-- Crowbar.java
+|           |   |-- GameObject.java
+|           |   `-- Key.java
+|           |-- ui/
+|           |   `-- GamePanel.java
+|           |-- utils/
+|           |   |-- CombatSystem.java
+|           |   |-- ConsoleRenderer.java
+|           |   |-- EntityFactory.java
+|           |   |-- GameEngine.java
+|           |   |-- InteractionSystem.java
+|           |   |-- LevelManager.java
+|           |   |-- MapLoader.java
+|           |   |-- MovementSystem.java
+|           |   `-- Printer.java
+|           `-- world/
+|               |-- Entity.java
+|               `-- World.java
 ```
 
 Important files:
 
 - `LICENSE` contains the project license text.
+- `banner.png` is the README banner image.
+- `demo-usage.mp4` is a gameplay demo video.
+- `Dungeon Crawler.pptx` is the project presentation.
 - `labyrinth/src/game/main/GuiMain.java` starts the graphical version.
 - `labyrinth/src/game/main/Main.java` starts the console version.
 - `labyrinth/maps/` contains the level map files.
