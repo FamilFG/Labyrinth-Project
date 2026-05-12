@@ -19,7 +19,7 @@ indent_mode=2
 
 [project]
 name=Labyrinth
-base_path=C:\\Users\\user\\Desktop\\Labyrinth-Project
+base_path=.
 description=
 file_patterns=
 
@@ -28,23 +28,16 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=0;Java;0;EUTF-8;1;1;0;C%3A%5CUsers%5Cuser%5CDesktop%5CLabyrinth-Project%5Clabyrinth%5Csrc%5Cgame%5Cmain%5CGuiMain.java;0;4
+current_page=-1
 
 [build-menu]
-NoneFT_00_LB=Compile Project
-NoneFT_00_CM=powershell -NoProfile -ExecutionPolicy Bypass -Command "New-Item -ItemType Directory -Force out | Out-Null; javac -d out (Get-ChildItem -Path labyrinth\\src -Recurse -Filter *.java | ForEach-Object { $_.FullName })"
-NoneFT_00_WD=C:\\Users\\user\\Desktop\\Labyrinth-Project
-NoneFT_01_LB=Run GUI
-NoneFT_01_CM=java -cp out game.main.GuiMain
-NoneFT_01_WD=C:\\Users\\user\\Desktop\\Labyrinth-Project
-filetypes=None;Java;
+filetypes=Java;
 JavaFT_00_LB=Compile Project
-JavaFT_00_CM=powershell -NoProfile -ExecutionPolicy Bypass -Command "cd 'C:\\Users\\user\\Desktop\\Labyrinth-Project'; New-Item -ItemType Directory -Force out | Out-Null; javac -d out (Get-ChildItem -Path labyrinth\\src -Recurse -Filter *.java | ForEach-Object { $_.FullName })"
-JavaFT_00_WD=C:\\Users\\user\\Desktop\\Labyrinth-Project
+JavaFT_00_CM=powershell -NoProfile -ExecutionPolicy Bypass -Command "New-Item -ItemType Directory -Force out | Out-Null; javac -d out (Get-ChildItem -Path labyrinth\\src -Recurse -Filter *.java | ForEach-Object { $_.FullName })"
+JavaFT_00_WD=%p
 JavaFT_01_LB=Run GUI
 JavaFT_01_CM=java -cp out game.main.GuiMain
-JavaFT_01_WD=C:\\Users\\user\\Desktop\\Labyrinth-Project
+JavaFT_01_WD=%p
 JavaFT_02_LB=
 JavaFT_02_CM=
 JavaFT_02_WD=
